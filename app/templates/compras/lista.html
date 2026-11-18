@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block titulo %}Compras{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Compras a proveedores</h1>
+  <a class="btn primario" href="{{ url_for('compras.nueva') }}">Ingresar mercadería</a>
+</div>
+<div class="dos-col">
+  <section class="tarjeta sin-padding">
+    <table><thead><tr><th>#</th><th>Fecha</th><th>Proveedor</th><th class="num">Unidades</th><th class="num">Total</th></tr></thead><tbody>
+    {% for c in compras %}<tr><td>{{ c.id }}</td><td>{{ c.fecha|fecha }}</td><td>{{ c.proveedor }}</td><td class="num">{{ c.unidades }}</td><td class="num">{{ c.total|pesos }}</td></tr>
+    {% else %}<tr><td colspan="5" class="vacio">Todavía no registraste compras.</td></tr>{% endfor %}
+    </tbody></table>
+  </section>
+  <section class="tarjeta">
+    <h2>Proveedores</h2>
+    <ul class="lista-simple">
+      {% for p in proveedores %}<li><strong>{{ p.nombre }}</strong> <small class="tenue">{{ p.productos }} productos{% if p.telefono %} · {{ p.telefono }}{% endif %}</small></li>{% endfor %}
+    </ul>
+    <form method="post" action="{{ url_for('compras.nuevo_proveedor') }}" class="formulario">
+      <h3>Agregar proveedor</h3>
+      <label>Nombre <input name="nombre" required></label>
+      <div class="fila"><label>Teléfono <input name="telefono"></label><label>Email <input name="email" type="email"></label></div>
+      <button class="btn">Agregar</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

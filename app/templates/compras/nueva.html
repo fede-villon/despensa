@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block titulo %}Ingresar mercadería{% endblock %}
+{% block contenido %}
+<div class="encabezado"><h1>Ingresar mercadería</h1><a class="btn" href="{{ url_for('compras.lista') }}">Volver</a></div>
+<form method="get" class="filtros">
+  <select name="proveedor_id" aria-label="Proveedor" onchange="this.form.submit()">
+    <option value="">Elegí el proveedor…</option>
+    {% for p in proveedores %}<option value="{{ p.id }}" {{ 'selected' if proveedor_id == p.id }}>{{ p.nombre }}</option>{% endfor %}
+  </select>
+  <noscript><button class="btn">Ver productos</button></noscript>
+</form>
+{% if proveedor_id %}
+<form method="post" class="tarjeta sin-padding">
+  <input type="hidden" name="proveedor_id" value="{{ proveedor_id }}">
+  <table><thead><tr><th>Producto</th><th class="num">Stock</th><th class="num">Mín.</th><th>Cantidad recibida</th><th>Costo unitario ($)</th></tr></thead><tbody>
+  {% for p in productos %}
+    <tr class="{{ 'resaltada' if p.stock <= p.stock_minimo }}"><td>{{ p.nombre }}</td><td class="num">{{ p.stock }}</td><td class="num tenue">{{ p.stock_minimo }}</td>
+      <td><input type="number" min="0" name="cant_{{ p.id }}" value="0" class="cant"></td>
+      <td><input type="number" min="0" name="costo_{{ p.id }}" value="{{ p.precio_costo }}" class="costo"></td></tr>
+  {% else %}<tr><td colspan="5" class="vacio">Este proveedor no tiene productos asignados.</td></tr>{% endfor %}
+  </tbody></table>
+  <div class="pie-form">
+    <label class="check"><input type="checkbox" name="actualizar_costo" value="1" checked> Actualizar el costo de los productos con estos valores</label>
+    <button class="btn primario">Registrar compra</button>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

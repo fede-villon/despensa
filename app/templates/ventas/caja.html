@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block titulo %}Caja{% endblock %}
+{% block contenido %}
+<div class="caja">
+  <section>
+    <h1>Caja</h1>
+    <form method="post" action="{{ url_for('ventas.agregar') }}" class="escaner">
+      <input name="codigo" placeholder="Escaneá el código o escribí el producto" autofocus autocomplete="off" aria-label="Código o producto">
+      <input name="cantidad" type="number" min="1" value="1" class="cant" aria-label="Cantidad">
+      <button class="btn primario">Agregar</button>
+    </form>
+    {% if q %}
+    <div class="tarjeta sin-padding">
+      <table><thead><tr><th>Resultados para «{{ q }}»</th><th class="num">Precio</th><th class="num">Stock</th><th></th></tr></thead><tbody>
+      {% for r in resultados %}
+        <tr><td>{{ r.nombre }} <small class="mono tenue">{{ r.codigo }}</small></td><td class="num">{{ r.precio_venta|pesos }}</td><td class="num">{{ r.stock }}</td>
+          <td class="num"><form method="post" action="{{ url_for('ventas.agregar') }}"><input type="hidden" name="producto_id" value="{{ r.id }}"><button class="btn chico" {{ 'disabled' if r.stock == 0 }}>Agregar</button></form></td></tr>
+      {% else %}<tr><td colspan="4" class="vacio">No se encontró nada.</td></tr>{% endfor %}
+      </tbody></table>
+    </div>
+    {% endif %}
+  </section>
+  <aside class="tarjeta ticket-actual">
+    <h2>Venta actual</h2>
+    {% if items %}
+    <ul class="items">
+      {% for i in items %}
+      <li>
+        <div><strong>{{ i.p.nombre }}</strong><small class="tenue">{{ i.cantidad }} × {{ i.p.precio_venta|pesos }}{% if i.cantidad > i.p.stock %} · <span class="rojo">stock: {{ i.p.stock }}</span>{% endif %}</small></div>
+        <span>{{ i.subtotal|pesos }}</span>
+        <form method="post" action="{{ url_for('ventas.quitar', pid=i.p.id) }}"><button class="quitar" aria-label="Quitar {{ i.p.nombre }}">×</button></form>
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="total"><span>Total</span><strong>{{ total|pesos }}</strong></div>
+    <form method="post" action="{{ url_for('ventas.cobrar') }}">
+      <div class="medios">
+        {% for clave, nombre in MEDIOS.items() %}
+        <label><input type="radio" name="medio_pago" value="{{ clave }}" {{ 'checked' if loop.first }}> {{ nombre }}</label>
+        {% endfor %}
+      </div>
+      <button class="btn primario ancho grande">Cobrar {{ total|pesos }}</button>
+    </form>
+    <form method="post" action="{{ url_for('ventas.vaciar') }}"><button class="btn enlace ancho">Cancelar venta</button></form>
+    {% else %}
+    <p class="vacio">Agregá productos para empezar.</p>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

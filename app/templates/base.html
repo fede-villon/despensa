@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Despensa{% endblock %} · Despensa</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
+</head>
+<body>
+{% if g.usuario %}
+<header class="barra">
+  <a class="marca" href="{{ url_for('inicio.panel') }}"><span class="logo">D</span> Despensa</a>
+  <nav>
+    {% set ep = request.endpoint or '' %}
+    <a href="{{ url_for('inicio.panel') }}" class="{{ 'activo' if ep.startswith('inicio') }}">Inicio</a>
+    <a href="{{ url_for('ventas.caja') }}" class="{{ 'activo' if ep.startswith('ventas.caja') or ep in ('ventas.agregar',) }}">Caja</a>
+    <a href="{{ url_for('ventas.lista') }}" class="{{ 'activo' if ep in ('ventas.lista', 'ventas.ticket') }}">Ventas</a>
+    <a href="{{ url_for('productos.lista') }}" class="{{ 'activo' if ep.startswith('productos') }}">Productos</a>
+    {% if g.usuario.rol == 'admin' %}
+    <a href="{{ url_for('compras.lista') }}" class="{{ 'activo' if ep.startswith('compras') }}">Compras</a>
+    <a href="{{ url_for('reportes.resumen') }}" class="{{ 'activo' if ep.startswith('reportes') }}">Reportes</a>
+    {% endif %}
+  </nav>
+  <div class="sesion">
+    <span>{{ g.usuario.nombre }} <small class="rol">{{ g.usuario.rol }}</small></span>
+    <a href="{{ url_for('auth.logout') }}">Salir</a>
+  </div>
+</header>
+{% endif %}
+<main class="{% block clase_main %}contenido{% endblock %}">
+  {% for cat, msg in get_flashed_messages(with_categories=true) %}
+    <div class="aviso aviso-{{ cat }}" role="status">{{ msg }}</div>
+  {% endfor %}
+  {% block contenido %}{% endblock %}
+</main>
+</body>
+</html>

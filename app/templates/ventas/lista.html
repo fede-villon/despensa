@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block titulo %}Ventas{% endblock %}
+{% block contenido %}
+<div class="encabezado"><h1>Ventas</h1></div>
+<form class="filtros" method="get">
+  <label>Desde <input type="date" name="desde" value="{{ desde }}"></label>
+  <label>Hasta <input type="date" name="hasta" value="{{ hasta }}"></label>
+  <button class="btn">Filtrar</button>
+  <span class="tenue">{{ ventas|length }} ventas · {{ ventas|sum(attribute='total')|pesos }}</span>
+</form>
+<div class="tarjeta sin-padding">
+<table><thead><tr><th>#</th><th>Fecha</th><th>Cajero</th><th>Pago</th><th class="num">Unidades</th><th class="num">Total</th></tr></thead><tbody>
+{% for v in ventas %}
+  <tr><td><a href="{{ url_for('ventas.ticket', vid=v.id) }}">{{ v.id }}</a></td><td>{{ v.fecha|fecha }}</td><td>{{ v.cajero }}</td><td>{{ MEDIOS[v.medio_pago] }}</td><td class="num">{{ v.unidades }}</td><td class="num">{{ v.total|pesos }}</td></tr>
+{% else %}<tr><td colspan="6" class="vacio">No hay ventas en ese rango.</td></tr>{% endfor %}
+</tbody></table>
+</div>
+{% endblock %}

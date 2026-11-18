@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block titulo %}Productos{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Productos <small class="tenue">{{ productos|length }}</small></h1>
+  {% if g.usuario.rol == 'admin' %}<a class="btn primario" href="{{ url_for('productos.nuevo') }}">Nuevo producto</a>{% endif %}
+</div>
+<form class="filtros" method="get">
+  <input name="q" value="{{ q }}" placeholder="Buscar por nombre o código" aria-label="Buscar">
+  <select name="categoria" aria-label="Categoría"><option value="">Todas las categorías</option>
+    {% for c in categorias %}<option value="{{ c.id }}" {{ 'selected' if cat == c.id }}>{{ c.nombre }}</option>{% endfor %}
+  </select>
+  <label class="check"><input type="checkbox" name="filtro" value="bajo" {{ 'checked' if filtro == 'bajo' }}> Solo stock bajo</label>
+  <button class="btn">Filtrar</button>
+</form>
+<div class="tarjeta sin-padding">
+<table>
+  <thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th class="num">Precio</th><th class="num">Stock</th><th>Vence</th></tr></thead>
+  <tbody>
+  {% for p in productos %}
+    <tr>
+      <td class="mono tenue">{{ p.codigo }}</td>
+      <td><a href="{{ url_for('productos.detalle', pid=p.id) }}">{{ p.nombre }}</a></td>
+      <td>{{ p.categoria or '—' }}</td>
+      <td class="num">{{ p.precio_venta|pesos }}</td>
+      <td class="num">{% if p.stock <= p.stock_minimo %}<span class="etiqueta {{ 'roja' if p.stock == 0 else 'ambar' }}">{{ p.stock }}</span>{% else %}{{ p.stock }}{% endif %}</td>
+      <td>{{ p.vencimiento|fecha }}</td>
+    </tr>
+  {% else %}<tr><td colspan="6" class="vacio">No hay productos con ese filtro.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

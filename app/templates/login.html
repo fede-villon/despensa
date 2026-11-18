@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block titulo %}Ingresar{% endblock %}
+{% block clase_main %}login{% endblock %}
+{% block contenido %}
+<form method="post" class="tarjeta login-caja">
+  <div class="marca grande"><span class="logo">D</span> Despensa</div>
+  <p class="tenue">Stock y ventas para tu almacén.</p>
+  <label>Usuario <input name="usuario" autocomplete="username" required autofocus></label>
+  <label>Contraseña <input name="clave" type="password" autocomplete="current-password" required></label>
+  <button class="btn primario ancho">Ingresar</button>
+  <p class="demo">Demo: <code>admin</code> / <code>admin123</code> · <code>cajero</code> / <code>cajero123</code></p>
+</form>
+{% endblock %}

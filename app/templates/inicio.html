@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block titulo %}Inicio{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Buen día, {{ g.usuario.nombre.split(' ')[0] }}</h1>
+  <a class="btn primario" href="{{ url_for('ventas.caja') }}">Nueva venta</a>
+</div>
+<section class="metricas">
+  <div class="metrica"><span>Vendido hoy</span><strong>{{ hoy.total|pesos }}</strong></div>
+  <div class="metrica"><span>Ventas hoy</span><strong>{{ hoy.cantidad }}</strong></div>
+  {% if g.usuario.rol == 'admin' %}<div class="metrica"><span>Ganancia hoy</span><strong>{{ ganancia_hoy|pesos }}</strong></div>{% endif %}
+  <div class="metrica {{ 'alerta' if stock_bajo }}"><span>Con stock bajo</span><strong>{{ stock_bajo|length }}</strong></div>
+</section>
+<div class="dos-col">
+  <section class="tarjeta">
+    <h2>Reponer <small class="tenue">stock en o por debajo del mínimo</small></h2>
+    {% if stock_bajo %}
+    <table><thead><tr><th>Producto</th><th class="num">Stock</th><th class="num">Mínimo</th></tr></thead><tbody>
+    {% for p in stock_bajo %}
+      <tr><td><a href="{{ url_for('productos.detalle', pid=p.id) }}">{{ p.nombre }}</a></td>
+          <td class="num {{ 'rojo' if p.stock == 0 }}">{{ p.stock }}</td><td class="num tenue">{{ p.stock_minimo }}</td></tr>
+    {% endfor %}</tbody></table>
+    {% else %}<p class="vacio">Todo en orden.</p>{% endif %}
+  </section>
+  <section class="tarjeta">
+    <h2>Por vencer <small class="tenue">próximos {{ dias_aviso }} días</small></h2>
+    {% if por_vencer %}
+    <table><thead><tr><th>Producto</th><th class="num">Stock</th><th>Vence</th></tr></thead><tbody>
+    {% for p in por_vencer %}
+      <tr><td><a href="{{ url_for('productos.detalle', pid=p.id) }}">{{ p.nombre }}</a></td><td class="num">{{ p.stock }}</td>
+          <td><span class="etiqueta {{ 'roja' if p.dias <= 1 else 'ambar' }}">{% if p.dias < 0 %}vencido{% elif p.dias == 0 %}hoy{% elif p.dias == 1 %}mañana{% else %}en {{ p.dias }} días{% endif %}</span></td></tr>
+    {% endfor %}</tbody></table>
+    {% else %}<p class="vacio">Nada por vencer.</p>{% endif %}
+  </section>
+</div>
+<section class="tarjeta">
+  <h2>Últimas ventas</h2>
+  <table><thead><tr><th>#</th><th>Fecha</th><th>Cajero</th><th>Pago</th><th class="num">Total</th></tr></thead><tbody>
+  {% for v in ultimas %}
+    <tr><td><a href="{{ url_for('ventas.ticket', vid=v.id) }}">{{ v.id }}</a></td><td>{{ v.fecha|fecha }}</td><td>{{ v.cajero }}</td><td>{{ MEDIOS[v.medio_pago] }}</td><td class="num">{{ v.total|pesos }}</td></tr>
+  {% else %}<tr><td colspan="5" class="vacio">Todavía no hay ventas.</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+{% endblock %}

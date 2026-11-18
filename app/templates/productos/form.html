@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block titulo %}{{ 'Nuevo producto' if nuevo else producto.nombre }}{% endblock %}
+{% block contenido %}
+{% set editable = g.usuario.rol == 'admin' %}
+<div class="encabezado">
+  <h1>{{ 'Nuevo producto' if nuevo else producto.nombre }}</h1>
+  <a class="btn" href="{{ url_for('productos.lista') }}">Volver</a>
+</div>
+<div class="dos-col">
+<form method="post" class="tarjeta formulario">
+  <fieldset {{ 'disabled' if not editable }}>
+  <div class="fila">
+    <label>Código <input name="codigo" value="{{ p.codigo or '' }}" required></label>
+    <label class="crece">Nombre <input name="nombre" value="{{ p.nombre or '' }}" required></label>
+  </div>
+  <div class="fila">
+    <label>Categoría <select name="categoria_id"><option value="">—</option>
+      {% for c in categorias %}<option value="{{ c.id }}" {{ 'selected' if p.categoria_id|string == c.id|string }}>{{ c.nombre }}</option>{% endfor %}</select></label>
+    <label>Proveedor <select name="proveedor_id"><option value="">—</option>
+      {% for pr in proveedores %}<option value="{{ pr.id }}" {{ 'selected' if p.proveedor_id|string == pr.id|string }}>{{ pr.nombre }}</option>{% endfor %}</select></label>
+  </div>
+  <div class="fila">
+    <label>Costo ($) <input name="precio_costo" type="number" min="0" value="{{ p.precio_costo if p.precio_costo is not none else '' }}" required></label>
+    <label>Precio de venta ($) <input name="precio_venta" type="number" min="0" value="{{ p.precio_venta if p.precio_venta is not none else '' }}" required></label>
+  </div>
+  <div class="fila">
+    {% if nuevo %}<label>Stock inicial <input name="stock" type="number" min="0" value="{{ p.stock or 0 }}"></label>{% endif %}
+    <label>Stock mínimo <input name="stock_minimo" type="number" min="0" value="{{ p.stock_minimo or 0 }}"></label>
+    <label>Vencimiento <input name="vencimiento" type="date" value="{{ p.vencimiento or '' }}"></label>
+  </div>
+  {% if not nuevo and producto.precio_costo %}
+    <p class="tenue">Margen actual: {{ ((producto.precio_venta - producto.precio_costo) * 100 / producto.precio_costo)|round|int }} % · Stock: <strong>{{ producto.stock }}</strong> unidades</p>
+  {% endif %}
+  {% if editable %}<button class="btn primario">{{ 'Crear producto' if nuevo else 'Guardar cambios' }}</button>{% endif %}
+  </fieldset>
+</form>
+{% if not nuevo %}
+<div>
+  {% if editable %}
+  <form method="post" action="{{ url_for('productos.ajuste', pid=producto.id) }}" class="tarjeta formulario">
+    <h2>Ajustar stock</h2>
+    <p class="tenue">Usalo después de contar la góndola, o si hubo roturas o vencidos.</p>
+    <div class="fila">
+      <label>Stock real contado <input name="stock_real" type="number" min="0" value="{{ producto.stock }}" required></label>
+      <label class="crece">Motivo <input name="detalle" placeholder="Conteo, rotura, vencido…" required></label>
+    </div>
+    <button class="btn">Aplicar ajuste</button>
+  </form>
+  {% endif %}
+  <section class="tarjeta">
+    <h2>Movimientos de stock</h2>
+    <table><thead><tr><th>Fecha</th><th>Motivo</th><th class="num">Cant.</th><th>Usuario</th></tr></thead><tbody>
+    {% for m in movimientos %}
+      <tr><td>{{ m.fecha|fecha }}</td><td>{{ m.motivo|capitalize }} <small class="tenue">{{ m.detalle or '' }}</small></td>
+          <td class="num {{ 'verde' if m.cantidad > 0 else 'rojo' }}">{{ '%+d'|format(m.cantidad) }}</td><td>{{ m.usuario or '—' }}</td></tr>
+    {% else %}<tr><td colspan="4" class="vacio">Sin movimientos registrados.</td></tr>{% endfor %}
+    </tbody></table>
+  </section>
+  {% if editable %}
+  <form method="post" action="{{ url_for('productos.baja', pid=producto.id) }}" onsubmit="return confirm('¿Dar de baja este producto?')">
+    <button class="btn peligro">Dar de baja el producto</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+</div>
+{% endblock %}

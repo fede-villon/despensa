@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block titulo %}Reportes{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Reportes</h1>
+  <div>
+    <a class="btn" href="{{ url_for('reportes.exportar_ventas', desde=desde, hasta=hasta) }}">Exportar ventas (Excel)</a>
+    <a class="btn" href="{{ url_for('reportes.exportar_stock') }}">Exportar stock (Excel)</a>
+  </div>
+</div>
+<form class="filtros" method="get">
+  <label>Desde <input type="date" name="desde" value="{{ desde }}"></label>
+  <label>Hasta <input type="date" name="hasta" value="{{ hasta }}"></label>
+  <button class="btn">Actualizar</button>
+</form>
+<section class="metricas">
+  <div class="metrica"><span>Facturado</span><strong>{{ totales.facturado|pesos }}</strong></div>
+  <div class="metrica"><span>Ganancia bruta</span><strong>{{ totales.ganancia|pesos }}</strong></div>
+  <div class="metrica"><span>Ventas</span><strong>{{ totales.ventas }}</strong></div>
+  <div class="metrica"><span>Ticket promedio</span><strong>{{ (totales.facturado // totales.ventas if totales.ventas else 0)|pesos }}</strong></div>
+</section>
+<section class="tarjeta">
+  <h2>Ventas por día</h2>
+  <div class="barras" role="img" aria-label="Gráfico de ventas por día">
+    {% for d in por_dia %}
+    <div class="barra-col" title="{{ d.dia|fecha }}: {{ d.total|pesos }} ({{ d.ventas }} ventas)">
+      <div class="barra-dato" style="height: {{ (d.total * 100 / maximo_dia)|round(1) if maximo_dia else 0 }}%"></div>
+      <span>{{ d.dia[8:10] }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+<div class="dos-col">
+  <section class="tarjeta">
+    <h2>Más vendidos</h2>
+    <table><thead><tr><th>Producto</th><th class="num">Unid.</th><th class="num">Facturado</th><th class="num">Ganancia</th></tr></thead><tbody>
+    {% for t in top %}<tr><td>{{ t.nombre }}</td><td class="num">{{ t.unidades }}</td><td class="num">{{ t.facturado|pesos }}</td><td class="num">{{ t.ganancia|pesos }}</td></tr>{% endfor %}
+    </tbody></table>
+  </section>
+  <div>
+    <section class="tarjeta">
+      <h2>Medios de pago</h2>
+      <table><tbody>
+      {% for m in medios %}<tr><td>{{ MEDIOS[m.medio_pago] }}</td><td class="num tenue">{{ m.ventas }} ventas</td><td class="num">{{ m.total|pesos }}</td></tr>{% endfor %}
+      </tbody></table>
+    </section>
+    <section class="tarjeta">
+      <h2>Por categoría</h2>
+      <table><tbody>
+      {% for c in categorias %}<tr><td>{{ c.categoria }}</td><td class="num">{{ c.facturado|pesos }}</td></tr>{% endfor %}
+      </tbody></table>
+    </section>
+  </div>
+</div>
+<section class="tarjeta">
+  <h2>Sin ventas en el período <small class="tenue">plata inmovilizada en góndola</small></h2>
+  <table><thead><tr><th>Producto</th><th class="num">Stock</th><th class="num">Capital (a costo)</th></tr></thead><tbody>
+  {% for s in sin_movimiento %}<tr><td>{{ s.nombre }}</td><td class="num">{{ s.stock }}</td><td class="num">{{ s.capital|pesos }}</td></tr>
+  {% else %}<tr><td colspan="3" class="vacio">Todos los productos tuvieron ventas.</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+{% endblock %}
