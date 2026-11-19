@@ -37,6 +37,8 @@ flask --app app run       # abrir http://localhost:5000
 
 Usuarios de demostración: `admin` / `admin123` y `cajero` / `cajero123`.
 
+También se puede recorrer una versión de muestra, sin instalar nada, desde el [portfolio](https://fede-villon.github.io/#proyectos).
+
 Tests:
 
 ```bash
